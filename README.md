@@ -3,7 +3,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/elham-code/random.github.io">
-    <img src="artor2.0.png" alt="Logo" width="80" height="80">
+    <img src="artor.png" alt="Logo" width="80" height="80">
   </a>
 
   <h3 align="center">20班专属随机座位器</h3>
