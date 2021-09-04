@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dracula">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1/dist/tailwind.min.css" rel="stylesheet" type="text/css" />
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@1.14.0/dist/full.css" rel="stylesheet" type="text/css" />
+
+    <title>CLASS-6 随机座位安排</title>
+    <style>
+        jieshao{
+            height: 100px;
+            width: 100%;
+        }
+        td {
+            width: 130px;
+            text-align: center;
+        }
+    </style>
+
+    <script>
+
+        var result;
+        var seat_sex;
+        var sex;
+        var result;
+        var timer;
+        var started = 0;
+
+
+        //var times = [0,0,0,0,0,0,0,0,0];
+
+
+        var names = { 1: '阿卜杜哈力克', 2: '陈铭隽', 3: '陈奕纶', 4: '崔茗扬', 5: '段明昊', 6: '冯梓健', 7: '郭祉舆', 8: '黄本坤', 9: '黄  昊', 10: '黄炜钊', 11: '黄钊华', 12: '江晓峰', 13: '雷颜玮', 14: '李国恒', 15: '李  可', 16: '李元星', 17: '李卓涛', 18: '李宗轩', 19: '练浩诚', 20: '梁俊文', 21: '梁宇轩', 22: '林子尧', 23: '刘嘉俊', 24: '宋亦非', 25: '谭钧钰', 26: '唐宏凯', 27: '王子扬', 28: '韦睿行', 29: '吴嘉浩木木', 30: '冼飘虹', 31: '许  航木木', 32: '叶孝轩木木', 33: '叶宇桐木木', 34: '郑  超木木', 35: '钟梓洋木木', 36: '周蒋麟木木'};
+
+        function randArr(arr) {
+            for (var i = 0; i < arr.length; i++) {
+                var iRand = parseInt(arr.length * Math.random());
+                var temp = arr[i];
+                arr[i] = arr[iRand];
+                arr[iRand] = temp;
+            }
+            return arr;
+        }
+
+        function get_random_seats() {
+            result = [];
+            boys = randArr([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]);  // 24 人
+            girls = randArr([25,26,27,28,29,30,31,32,33,34,35,36]);
+
+            // 0是男1是女 0.5男生单桌
+            seat_sex = randArr(Array(18).fill(0).concat(Array(5).fill(1)).concat([0.5]));
+            while (seat_sex.length > 0) {
+                sex = seat_sex.pop();
+                if (sex == 0) {
+                    result = result.concat([boys.pop(), boys.pop()]);
+                }
+                if (sex == 1) {
+                    result = result.concat([girls.pop(), girls.pop()]);
+                }
+                if (sex == 0.5) {
+                    result = result.concat([boys.pop()]);
+                }
+
+            }
+            result = result.concat(result[36])
+            result[36] = 36;
+            return result;
+
+        }
+
+        function start() {
+            if (started == 0) {
+                started = 1;
+
+                timer = setInterval(function () {
+                    seats = get_random_seats();
+
+                    var allTd = document.getElementsByClassName("hh");
+                    for (var i = 0; i < allTd.length; i++) {
+                        allTd[allTd.length - i - 1].innerText = names[seats[i]];
+                    }
+
+                }, 36);
+            }
+        }
+
+        function end() {
+            if (started == 1) {
+                started = 0;
+                clearInterval(timer);
+                download();
+            }
+        }
+
+        function download() {
+
+            var oHtml = document.getElementsByClassName('table w-full')[0].outerHTML;
+            var excelHtml = `
+                <html>
+                    <head>
+                        <meta charset='utf-8' />
+                    </head>
+                    <body>
+                        ${oHtml}
+                    </body>
+                </html>
+            `;
+            // 生成xls文件并通过a标签下载到本地
+
+            // 生成Excel
+            var excelBlob = new Blob([excelHtml], {
+                type: 'application/vnd.ms-excel'
+            })
+
+
+            var oA = document.createElement('a');
+            var ls = URL.createObjectURL(excelBlob);
+            // 利用URL.createObjectURL()方法为a元素生成blob URL
+
+            oA.href = ls;
+            oA.download = '座位表.xls';
+            oA.innerHTML = "下载Excel格式"
+
+            if (document.getElementById('insert').childNodes.length > 0) {
+                document.getElementById('insert').removeChild(document.getElementById('insert').childNodes[0]);
+            }
+            document.getElementById('insert').append(oA);
+
+        }
+
+
+    </script>
+</head>
+
+<body>
+
+    <!-- table是表格标签，tr表示一行，td表示一行中的一个单元格 -->
+    <!-- 默认情况，单元格会根据内容的长度比例来自动设置 -->
+
+    <div class="hero min-h-screen bg-base-1000">
+        <div class="text-center hero-content">
+            <div class="overflow-x-auto">
+                <h1 class="stat-value">20班随机座位表</h1>
+                <table border="1" width="1000" class="table w-full">
+                        <!-- colspan 可以跨列 -->
+                        <div class="jieshao"></div>
+                        <h2 class="text-lg font-bold">讲台</h1>
+                    <thead>
+                        <tr>
+                          <th></th> 
+                          <th>第一组</th>
+                          <th>第二组</th> 
+                          <th>第三组</th> 
+                          <th>第四组</th>
+                          <th>第五组</th>
+                          <th>第六组</th>
+                        </tr>
+                      </thead> 
+                    <tbody>
+                    <tr>
+                        <th>1</th> 
+                        <!-- 可以对单元格施加宽度属性，使用百分比和长度皆可 -->
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                    </tr>
+                    <tr>
+                        <th>2</th> 
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                    </tr>
+                    <tr>
+                        <th>3</th> 
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                    </tr>
+                    <tr>
+                        <th>4</th> 
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                    </tr>
+                    <tr>
+                        <th>5</th> 
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                    </tr>
+                    <tr>
+                        <th>6</th> 
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                        <td class="hh"></td>
+                    </tr>
+                    
+                    
+                </tbody>
+                </table>
+                <br><br>
+                <button class="btn btn-outline" onclick="start()">开始</button>
+                <button class="btn btn-outline" onclick="end()">结束</button>
+                <p id="insert" class="btn btn-ghost"></p>
+
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
