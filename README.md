@@ -14,7 +14,7 @@
     <a href="https://github.com/elham-code/random.github.io"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="http://artor.top/">在线演示</a>
+<!--     <a href="http://artor.top/">在线演示</a> -->
     ·
     <a href="">提出Bug</a>
     ·
