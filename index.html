@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1/dist/tailwind.min.css" rel="stylesheet" type="text/css" />
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@1.14.0/dist/full.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@1.14.0/dist/full.css" rel="stylesheet" type="text/css" />
 
-    <title>20班专属随机座位器</title>
+    <title>班级随机座位器</title>
     <style>
-        jieshao{
+        .jieshao {
             height: 100px;
             width: 100%;
         }
@@ -15,216 +15,189 @@
             width: 130px;
             text-align: center;
         }
+        .seat-table {
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        .seat-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            transition: all 0.3s;
+        }
+        .seat-table td:hover {
+            background-color: #f0f0f0;
+        }
     </style>
 
     <script>
-
-        var result;
-        var seat_sex;
-        var sex;
-        var result;
+        var names = [];
         var timer;
-        var started = 0;
+        var started = false;
+        var totalSeats = 36;
 
-
-        //var times = [0,0,0,0,0,0,0,0,0];
-
-
-        var names = { 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '10', 11: '11', 12: '12', 13: '13', 14: '14', 15: '15', 16: '16', 17: '17', 18: '18', 19: '19', 20: '20', 21: '21', 22: '22', 23: '23', 24: '24', 25: '25', 26: '26', 27: '27', 28: '28', 29: '28', 30: '30', 31: '31', 32: '32', 33: '33', 34: '34', 35: '35', 36: '36'};
-
-        function randArr(arr) {
-            for (var i = 0; i < arr.length; i++) {
-                var iRand = parseInt(arr.length * Math.random());
-                var temp = arr[i];
-                arr[i] = arr[iRand];
-                arr[iRand] = temp;
+        function uploadNames() {
+            const input = document.getElementById('namesInput');
+            const file = input.files[0];
+            if (!file) {
+                alert('请选择文件');
+                return;
             }
-            return arr;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                names = content.split('\n').map(name => name.trim()).filter(name => name);
+                updateNamesList();
+                updateTotalSeats();
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function updateNamesList() {
+            const namesList = document.getElementById('namesList');
+            namesList.innerHTML = '';
+            names.forEach((name, index) => {
+                namesList.innerHTML += `<li class="mb-1">${index + 1}: ${name}</li>`;
+            });
+        }
+
+        function updateTotalSeats() {
+            totalSeats = Math.max(names.length, 36);
+            document.getElementById('totalSeats').value = totalSeats;
+            createSeatTable();
+        }
+
+        function createSeatTable() {
+            const table = document.querySelector('.seat-table tbody');
+            table.innerHTML = '';
+            const rows = Math.ceil(totalSeats / 6);
+            for (let i = 0; i < rows; i++) {
+                let row = '<tr>';
+                for (let j = 0; j < 6; j++) {
+                    if (i * 6 + j < totalSeats) {
+                        row += '<td class="hh"></td>';
+                    } else {
+                        row += '<td></td>';
+                    }
+                }
+                row += '</tr>';
+                table.innerHTML += row;
+            }
         }
 
         function get_random_seats() {
+            const seats = Array(totalSeats).fill(null);
+            const shuffledNames = [...names].sort(() => Math.random() - 0.5);
             
-            const seats = Array(36)
-            const ns = Object.values(names)
-            const boys = ns.slice(0,24)
-            const girls = ns.slice(24)
-            
-            while (boys.length > 0) {
-                const r = Math.floor(36 * Math.random())
-                const seat = seats[r]
-                if (!!seat) {
-                    continue
-                }
-                seats[r] = boys.pop(0)
+            for (let i = 0; i < shuffledNames.length; i++) {
+                seats[i] = shuffledNames[i];
             }
             
-            for (let i = 0; i < seats.length; i++) {
-                const seat = seats[i]
-                if (!!seat) {
-                    continue
-                }
-                seats[i] = girls.pop(0)
-            }
-            
-            return seats
-
+            return seats;
         }
 
         function start() {
-            if (started == 0) {
-                started = 1;
+            if (!started) {
+                started = true;
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('endBtn').disabled = false;
 
                 timer = setInterval(function () {
-                    seats = get_random_seats();
-
-                    var allTd = document.getElementsByClassName("hh");
-                    for (var i = 0; i < allTd.length; i++) {
-                        allTd[allTd.length - i - 1].innerText = seats[i];
+                    const seats = get_random_seats();
+                    const allTd = document.getElementsByClassName("hh");
+                    for (let i = 0; i < allTd.length; i++) {
+                        allTd[i].innerText = seats[i] || '';
+                        allTd[i].style.backgroundColor = seats[i] ? '#4a5568' : '#2d3748';
                     }
-
-                }, 36);
+                }, 100);
             }
         }
 
         function end() {
-            if (started == 1) {
-                started = 0;
+            if (started) {
+                started = false;
                 clearInterval(timer);
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('endBtn').disabled = true;
                 download();
             }
         }
 
         function download() {
-
-            var oHtml = document.getElementsByClassName('table w-full')[0].outerHTML;
-            var excelHtml = `
-                <html>
-                    <head>
-                        <meta charset='utf-8' />
-                    </head>
-                    <body>
-                        ${oHtml}
-                    </body>
-                </html>
-            `;
-            // 生成xls文件并通过a标签下载到本地
-
-            // 生成Excel
-            var excelBlob = new Blob([excelHtml], {
-                type: 'application/vnd.ms-excel'
-            })
-
-
-            var oA = document.createElement('a');
-            var ls = URL.createObjectURL(excelBlob);
-            // 利用URL.createObjectURL()方法为a元素生成blob URL
-
-            oA.href = ls;
-            oA.download = '座位表.xls';
-            oA.innerHTML = "下载Excel格式"
-
-            if (document.getElementById('insert').childNodes.length > 0) {
-                document.getElementById('insert').removeChild(document.getElementById('insert').childNodes[0]);
-            }
-            document.getElementById('insert').append(oA);
-
+            const table = document.querySelector('.seat-table');
+            const wb = XLSX.utils.table_to_book(table, {sheet: "座位表"});
+            XLSX.writeFile(wb, '座位表.xlsx');
         }
 
+        function saveConfiguration() {
+            const seats = Array.from(document.getElementsByClassName("hh")).map(td => td.innerText);
+            localStorage.setItem('savedSeats', JSON.stringify(seats));
+            alert('座位配置已保存');
+        }
 
+        function loadConfiguration() {
+            const savedSeats = JSON.parse(localStorage.getItem('savedSeats'));
+            if (savedSeats) {
+                const allTd = document.getElementsByClassName("hh");
+                for (let i = 0; i < allTd.length; i++) {
+                    allTd[i].innerText = savedSeats[i] || '';
+                    allTd[i].style.backgroundColor = savedSeats[i] ? '#4a5568' : '#2d3748';
+                }
+                alert('座位配置已加载');
+            } else {
+                alert('没有找到保存的座位配置');
+            }
+        }
+
+        function manualInput() {
+            const input = document.getElementById('manualInput');
+            names = input.value.split('\n').map(name => name.trim()).filter(name => name);
+            updateNamesList();
+            updateTotalSeats();
+        }
+
+        function changeTotalSeats() {
+            totalSeats = parseInt(document.getElementById('totalSeats').value);
+            createSeatTable();
+        }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 </head>
 
-<body>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold mb-8 text-center">20班随机座位表</h1>
+        
+        <div class="mb-8">
+            <input type="file" id="namesInput" accept=".txt" class="file-input file-input-bordered w-full max-w-xs mb-4" />
+            <button onclick="uploadNames()" class="btn btn-primary">上传名单</button>
+        </div>
 
-    <!-- table是表格标签，tr表示一行，td表示一行中的一个单元格 -->
-    <!-- 默认情况，单元格会根据内容的长度比例来自动设置 -->
+        <div class="mb-8">
+            <textarea id="manualInput" rows="5" class="textarea textarea-bordered w-full" placeholder="手动输入名单，每行一个名字"></textarea>
+            <button onclick="manualInput()" class="btn btn-primary mt-2">确认输入</button>
+        </div>
 
-    <div class="hero min-h-screen bg-base-1000">
-        <div class="text-center hero-content">
-            <div class="overflow-x-auto">
-                <h1 class="stat-value">20班随机座位表</h1>
-                <table border="1" width="1000" class="table w-full">
-                        <!-- colspan 可以跨列 -->
-                        <div class="jieshao"></div>
-                        <h2 class="text-lg font-bold">讲台</h1>
-                    <thead>
-                        <tr>
-                          <th></th> 
-                          <th>第一组</th>
-                          <th>第二组</th> 
-                          <th>第三组</th> 
-                          <th>第四组</th>
-                          <th>第五组</th>
-                          <th>第六组</th>
-                        </tr>
-                      </thead> 
-                    <tbody>
-                    <tr>
-                        <th>1</th> 
-                        <!-- 可以对单元格施加宽度属性，使用百分比和长度皆可 -->
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                    </tr>
-                    <tr>
-                        <th>2</th> 
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                    </tr>
-                    <tr>
-                        <th>3</th> 
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                    </tr>
-                    <tr>
-                        <th>4</th> 
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                    </tr>
-                    <tr>
-                        <th>5</th> 
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                    </tr>
-                    <tr>
-                        <th>6</th> 
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                        <td class="hh"></td>
-                    </tr>
-                    
-                    
-                </tbody>
-                </table>
-                <br><br>
-                <button class="btn btn-outline" onclick="start()">开始</button>
-                <button class="btn btn-outline" onclick="end()">结束</button>
-                <p id="insert" class="btn btn-ghost"></p>
+        <div class="mb-8">
+            <label for="totalSeats" class="mr-2">座位数量：</label>
+            <input type="number" id="totalSeats" min="1" value="36" class="input input-bordered w-20" onchange="changeTotalSeats()">
+        </div>
 
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold mb-4">已上传的名单：</h3>
+            <ul id="namesList" class="list-disc list-inside grid grid-cols-3 gap-4"></ul>
+        </div>
 
-            </div>
+        <table class="seat-table">
+            <tbody>
+                <!-- 座位表将通过 JavaScript 动态生成 -->
+            </tbody>
+        </table>
+
+        <div class="flex justify-center space-x-4 mt-8">
+            <button id="startBtn" class="btn btn-primary" onclick="start()">开始</button>
+            <button id="endBtn" class="btn btn-secondary" onclick="end()" disabled>结束</button>
+            <button class="btn btn-accent" onclick="saveConfiguration()">保存配置</button>
+            <button class="btn btn-info" onclick="loadConfiguration()">加载配置</button>
         </div>
     </div>
 </body>
