@@ -36,7 +36,7 @@
 
 ## 快速开始
 
-访问我们的 [GitHub Pages](https://elham-code/random.github.io) 来体验班级随机座位器。
+访问我们的 [GitHub Pages](https://itelmn.github.io/random.github.io/) 来体验班级随机座位器。
 
 ## 反馈与贡献
 
